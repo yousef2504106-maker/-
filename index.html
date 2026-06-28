@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Talol Store</title>
+<style>
+body{margin:0;font-family:Arial;background:#f5f5f5}
+header{display:flex;justify-content:space-between;align-items:center;background:#00e640;padding:15px}
+input{width:45%;padding:10px}
+.container{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;padding:20px}
+.card{background:#fff;border-radius:10px;box-shadow:0 2px 8px #0002;overflow:hidden}
+.card img{width:100%;height:180px;object-fit:cover;background:#ddd}
+.card h3,.price{padding:10px}
+button{width:100%;padding:12px;border:0;background:#00e640;cursor:pointer}
+#cart{position:fixed;top:0;right:-360px;width:340px;height:100%;background:#fff;box-shadow:-3px 0 10px #0003;transition:.3s;padding:15px;overflow:auto}
+#cart.open{right:0}
+.row{display:flex;justify-content:space-between;align-items:center;margin:8px 0;border-bottom:1px solid #eee;padding-bottom:6px}
+.qty button{width:28px;padding:4px}
+</style>
+</head>
+<body>
+<header>
+<h2>Talol</h2>
+<input placeholder="ابحث...">
+<div><button onclick="toggleCart()">🛒 <span id="count">0</span></button></div>
+</header>
+
+<div class="container" id="products"></div>
+
+<div id="cart">
+<h2>سلة المشتريات</h2>
+<div id="items"></div>
+<h3>الإجمالي: <span id="total">0</span> ج.م</h3>
+<button onclick="toggleCart()">إغلاق</button>
+</div>
+
+<script>
+const data=[
+{name:"هاتف ذكي",price:12999,img:"https://picsum.photos/300/200?1"},
+{name:"سماعة",price:899,img:"https://picsum.photos/300/200?2"},
+{name:"ساعة ذكية",price:2499,img:"https://picsum.photos/300/200?3"}
+];
+const cart=[];
+const p=document.getElementById("products");
+data.forEach((x,i)=>p.innerHTML+=`<div class=card><img src="${x.img}"><h3>${x.name}</h3><div class=price>${x.price} ج.م</div><button onclick="add(${i})">أضف إلى السلة</button></div>`);
+function add(i){
+ let f=cart.find(c=>c.id===i);
+ if(f)f.q++; else cart.push({id:i,q:1});
+ render();
+}
+function render(){
+ let html="",total=0,count=0;
+ cart.forEach(c=>{
+ let pr=data[c.id];
+ total+=pr.price*c.q; count+=c.q;
+ html+=`<div class=row><div>${pr.name}<br>${pr.price} ج.م</div>
+ <div class=qty><button onclick="chg(${c.id},-1)">-</button> ${c.q} <button onclick="chg(${c.id},1)">+</button></div></div>`;
+ });
+ document.getElementById("items").innerHTML=html||"السلة فارغة";
+ document.getElementById("total").textContent=total;
+ document.getElementById("count").textContent=count;
+ localStorage.cart=JSON.stringify(cart);
+}
+function chg(id,d){
+ let i=cart.findIndex(x=>x.id===id);
+ if(i<0)return;
+ cart[i].q+=d;
+ if(cart[i].q<=0)cart.splice(i,1);
+ render();
+}
+function toggleCart(){document.getElementById("cart").classList.toggle("open");}
+try{
+ let saved=JSON.parse(localStorage.cart||"[]");
+ saved.forEach(x=>cart.push(x));
+ render();
+}catch(e){}
+</script>
+</body>
+</html>
